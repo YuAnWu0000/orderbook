@@ -1,0 +1,15 @@
+version: "3"
+services:
+  web:
+    image: fts-broker-monitor:v0.0.1
+    container_name: fts-broker-monitor
+    build:
+      context: .
+      args:
+        DEPLOY_ENV: ${REACT_APP_ENV}
+    environment:
+      - "API_HOST=localhost"
+      - "API_PORT=8000"
+    ports:
+      - 3000:80
+    restart: always
