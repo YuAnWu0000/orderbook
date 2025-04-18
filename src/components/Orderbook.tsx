@@ -32,20 +32,20 @@ const Orderbook: React.FC = () => {
       </div>
       {/* sell price */}
       <div className="mb-2">
-        {orderbook?.asks.map((item, index) => (
-          <div key={`ask${index}`} className="flex items-center justify-between">
-            <p className="basis-1/3 text-sell text-left">{item[0]}</p>
-            <p className="basis-1/3 text-primary">{item[1]}</p>
+        {Array.from(orderbook ? orderbook.asks.values() : []).map((item) => (
+          <div key={`ask${item.price}`} className="flex items-center justify-between">
+            <p className="basis-1/3 text-sell text-left">{item.price}</p>
+            <p className="basis-1/3 text-primary">{item.size}</p>
             <p className="basis-1/3 text-primary">{1000}</p>
           </div>
         ))}
       </div>
       {/* buy price */}
       <div className="bids">
-        {orderbook?.bids.map((item, index) => (
-          <div key={`bid${index}`} className="flex items-center justify-between">
-            <p className="basis-1/3 text-buy text-left">{item[0]}</p>
-            <p className="basis-1/3 text-primary">{item[1]}</p>
+        {Array.from(orderbook ? orderbook.asks.values() : []).map((item) => (
+          <div key={`bid${item.price}`} className="flex items-center justify-between">
+            <p className="basis-1/3 text-buy text-left">{item.price}</p>
+            <p className="basis-1/3 text-primary">{item.size}</p>
             <p className="basis-1/3 text-primary">{1000}</p>
           </div>
         ))}

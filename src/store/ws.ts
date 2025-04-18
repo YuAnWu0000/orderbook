@@ -26,7 +26,7 @@ const useWebSocketStore = create<WebSocketState>()((set, get) => ({
       // error handling
       if (res.errors && Array.isArray(res.errors)) {
         const err = res.errors[0].error;
-        const message = err.code in BTSE_ERRPR_CODES ? err.message : "BTSE unknown error";
+        const message = err.code in BTSE_ERROR_CODES ? err.message : "BTSE unknown error";
         // error popup
         useGlobalStore.setState({
           isDialogOpen: true,
@@ -129,7 +129,7 @@ const SOCKET_DEFAULT_CLOSE_CODES = {
 };
 type WSErrorCode = keyof typeof SOCKET_DEFAULT_CLOSE_CODES;
 
-const BTSE_ERRPR_CODES = {
+const BTSE_ERROR_CODES = {
   1000: "Market pair provided is currently not supported.",
   1001: "Operation provided is currently not supported.",
   1002: "Invalid request. Please check again your request and provide all information required.",
