@@ -42,7 +42,7 @@ const Orderbook: React.FC = () => {
       </div>
       {/* buy price */}
       <div className="bids">
-        {Array.from(orderbook ? orderbook.asks.values() : []).map((item) => (
+        {Array.from(orderbook ? orderbook.bids.values() : []).map((item) => (
           <div key={`bid${item.price}`} className="flex items-center justify-between">
             <p className="basis-1/3 text-buy text-left">{item.price}</p>
             <p className="basis-1/3 text-primary">{item.size}</p>

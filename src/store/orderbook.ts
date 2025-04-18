@@ -62,6 +62,7 @@ const useOrderbookStore = create<OrderbookState>()((set, get) => ({
     }
   },
   createOrderbook: (newQuotes, previousMap) => {
+    // console.log(newQuotes);
     const newMap = new Map();
     newQuotes.forEach((quote) => {
       const previous = previousMap?.get(quote[0]);
@@ -73,6 +74,7 @@ const useOrderbookStore = create<OrderbookState>()((set, get) => ({
         size: quote[1],
       });
     });
+    // console.log(newMap);
     return newMap;
   },
 }));
