@@ -1,6 +1,6 @@
 # Introduction
 
-本專案為加密貨幣的訂單簿Demo。
+本專案為加密貨幣的即時訂單簿Demo，後端串接BTSE websocket API，當訂單簿價格變動時，會出現對應的背景色。
 
 API Doc: https://btsecom.github.io/docs/futures/en/#orderbook-incremental-updates
 
