@@ -2,6 +2,8 @@
 
 本專案為加密貨幣的訂單簿Demo。
 
+API Doc: https://btsecom.github.io/docs/futures/en/#orderbook-incremental-updates
+
 ## Tech Stack
 
 **Initializer:** `create-react-app`<br>
