@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { twMerge } from "tailwind-merge";
 import useOrderbookStore from "@/store/orderbook";
 
 const Orderbook: React.FC = () => {
@@ -33,9 +34,23 @@ const Orderbook: React.FC = () => {
       {/* sell price */}
       <div className="mb-2">
         {Array.from(orderbook ? orderbook.asks.values() : []).map((item) => (
-          <div key={`ask${item.price}`} className="flex items-center justify-between">
+          <div
+            key={`ask${item.price}`}
+            className={twMerge(
+              "flex items-center justify-between hover:bg-[#1E3059] cursor-pointer",
+              item.isNewQuote && "bg-[rgba(255, 91, 90, 0.5)",
+            )}
+          >
             <p className="basis-1/3 text-sell text-left">{item.price}</p>
-            <p className="basis-1/3 text-primary">{item.size}</p>
+            <p
+              className={twMerge(
+                "basis-1/3 text-primary",
+                item.sizeChange === "increase" && "bg-[rgba(0,177,93,0.5)]",
+                item.sizeChange === "decrease" && "bg-[rgba(255,91,90,0.5)]",
+              )}
+            >
+              {item.size}
+            </p>
             <p className="basis-1/3 text-primary">{1000}</p>
           </div>
         ))}
@@ -43,9 +58,23 @@ const Orderbook: React.FC = () => {
       {/* buy price */}
       <div className="bids">
         {Array.from(orderbook ? orderbook.bids.values() : []).map((item) => (
-          <div key={`bid${item.price}`} className="flex items-center justify-between">
+          <div
+            key={`bid${item.price}`}
+            className={twMerge(
+              "flex items-center justify-between hover:bg-[#1E3059] cursor-pointer",
+              item.isNewQuote && "bg-[rgba(0,177,93,0.5)]",
+            )}
+          >
             <p className="basis-1/3 text-buy text-left">{item.price}</p>
-            <p className="basis-1/3 text-primary">{item.size}</p>
+            <p
+              className={twMerge(
+                "basis-1/3 text-primary",
+                item.sizeChange === "increase" && "bg-[rgba(0,177,93,0.5)]",
+                item.sizeChange === "decrease" && "bg-[rgba(255,91,90,0.5)]",
+              )}
+            >
+              {item.size}
+            </p>
             <p className="basis-1/3 text-primary">{1000}</p>
           </div>
         ))}

@@ -47,8 +47,6 @@ const useOrderbookStore = create<OrderbookState>()((set, get) => ({
       if (!get().orderbook) {
         console.log("Lack of previous orderbook data. Please get snapshot again.");
         return;
-      } else if (data.prevSeqNum !== get().orderbook?.seqNum) {
-        console.log("sequence number match error");
       }
       const asks = get().mergeSortedQuotes(
         data.asks
@@ -66,7 +64,12 @@ const useOrderbookStore = create<OrderbookState>()((set, get) => ({
         get().orderbook?.bids ?? new Map(),
         "buy",
       );
-      if (Array.from(bids.keys())[0] > Array.from(asks.keys())[asks.size - 1]) {
+      // console.log(asks, bids);
+      // handle order book error
+      if (
+        data.prevSeqNum !== get().orderbook?.seqNum ||
+        Array.from(bids.keys())[0] > Array.from(asks.keys())[asks.size - 1]
+      ) {
         useWebSocketStore.getState().sendSocketMessage({
           op: "unsubscribe",
           args: ["update:BTCPFC_0"],
@@ -102,7 +105,7 @@ const useOrderbookStore = create<OrderbookState>()((set, get) => ({
     const newMap = new Map();
     newQuotes.forEach((quote) => {
       // create first snapshot
-      console.log("create first!");
+      // console.log("create first snapshot!");
       newMap.set(quote[0], {
         isNewQuote: false,
         sizeChange: null,
@@ -110,7 +113,7 @@ const useOrderbookStore = create<OrderbookState>()((set, get) => ({
         size: quote[1],
       });
     });
-    console.log(newMap);
+    // console.log("snapshot created!", newMap);
     return newMap;
   },
   mergeSortedQuotes: (delta, prevMap, side) => {
@@ -144,6 +147,7 @@ const useOrderbookStore = create<OrderbookState>()((set, get) => ({
         j++;
       } else {
         // price equal
+        // console.log("delta", parseFloat(delta[i][1]));
         result.push([
           delta[i][0],
           {
@@ -170,9 +174,7 @@ const useOrderbookStore = create<OrderbookState>()((set, get) => ({
       j++;
     }
     // console.log("merge result: ", result);
-    // console.log("1: ", result);
     result.sort((a, b) => parseFloat(b[0]) - parseFloat(a[0]));
-    // console.log("2: ", result);
     return new Map(side === "buy" ? result.slice(0, DISPLAY_NUMBER) : result.slice(0 - DISPLAY_NUMBER));
   },
 }));
