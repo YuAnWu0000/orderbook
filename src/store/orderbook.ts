@@ -8,6 +8,7 @@ type QuoteState = {
   price: string;
   size: string;
   total?: number;
+  percentage?: number;
 };
 interface OrderbookResponse {
   asks: QuoteRawData;
@@ -176,11 +177,20 @@ const useOrderbookStore = create<OrderbookState>()((set, get) => ({
     return new Map(get().calculateTotalSize(newArray, side));
   },
   calculateTotalSize: (quoteArr, side) => {
-    let total = 0;
+    let total = 0,
+      accumulation = 0;
     const indices = side === "sell" ? [...quoteArr.keys()].reverse() : [...quoteArr.keys()];
     for (const i of indices) {
       total += parseFloat(quoteArr[i][1].size);
-      quoteArr[i][1] = { ...quoteArr[i][1], total };
+    }
+    // calculate percentage
+    for (const i of indices) {
+      accumulation += parseFloat(quoteArr[i][1].size);
+      quoteArr[i][1] = {
+        ...quoteArr[i][1],
+        total: accumulation,
+        percentage: Math.round((accumulation * 100) / total) / 100,
+      };
     }
     return quoteArr;
   },

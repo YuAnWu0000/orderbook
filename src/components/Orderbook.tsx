@@ -23,7 +23,7 @@ const Orderbook: React.FC = () => {
             key={`ask${item.price}`}
             className={twMerge(
               "flex items-center justify-between hover:bg-[#1E3059] cursor-pointer",
-              item.isNewQuote && "bg-[rgba(255, 91, 90, 0.5)",
+              item.isNewQuote && "bg-[rgba(255,91,90,0.5)",
             )}
           >
             <p className="basis-[35%] text-sell text-left">{formatNumberWithCommas(item.price)}</p>
@@ -36,7 +36,13 @@ const Orderbook: React.FC = () => {
             >
               {formatNumberWithCommas(item.size)}
             </p>
-            <p className="basis-[40%] text-primary">{formatNumberWithCommas(item.total)}</p>
+            <p className="basis-[40%] relative text-primary">
+              <div
+                className="w-full h-full absolute top-0 right-0 bg-[rgba(255,90,90,0.12)]"
+                style={{ width: `${(item.percentage ?? 0) * 100}%` }}
+              ></div>
+              {formatNumberWithCommas(item.total)}
+            </p>
           </div>
         ))}
       </div>
@@ -60,7 +66,13 @@ const Orderbook: React.FC = () => {
             >
               {formatNumberWithCommas(item.size)}
             </p>
-            <p className="basis-[40%] text-primary">{formatNumberWithCommas(item.total)}</p>
+            <p className="basis-[40%] relative text-primary">
+              <div
+                className="w-full h-full absolute top-0 right-0 bg-[rgba(16,186,104,0.12)]"
+                style={{ width: `${(item.percentage ?? 0) * 100}%` }}
+              ></div>
+              {formatNumberWithCommas(item.total)}
+            </p>
           </div>
         ))}
       </div>
