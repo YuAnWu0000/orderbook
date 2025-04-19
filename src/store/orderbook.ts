@@ -7,6 +7,7 @@ type QuoteState = {
   sizeChange: null | "increase" | "decrease";
   price: string;
   size: string;
+  total?: number;
 };
 interface OrderbookResponse {
   asks: QuoteRawData;
@@ -32,12 +33,13 @@ const DISPLAY_NUMBER = 8;
 interface OrderbookState {
   orderbook: null | Orderbook;
   handleOrderbook: (data: OrderbookResponse) => void;
-  createOrderbook: (newQuotes: QuoteRawData, previousMap?: Map<string, QuoteState>) => Map<string, QuoteState>;
+  createOrderbook: (newQuotes: QuoteRawData, side: "buy" | "sell") => Map<string, QuoteState>;
   mergeSortedQuotes: (
     delta: QuoteRawData,
     prevMap: Map<string, QuoteState>,
     side: "buy" | "sell",
   ) => Map<string, QuoteState>;
+  calculateTotalSize: (quoteArr: [string, QuoteState][], side: "buy" | "sell") => [string, QuoteState][];
 }
 
 const useOrderbookStore = create<OrderbookState>()((set, get) => ({
@@ -49,18 +51,14 @@ const useOrderbookStore = create<OrderbookState>()((set, get) => ({
         return;
       }
       const asks = get().mergeSortedQuotes(
-        data.asks
-          .filter((quote) => quote[1] !== "0")
-          .sort((a, b) => parseFloat(b[0]) - parseFloat(a[0]))
-          .slice(0 - DISPLAY_NUMBER),
+        data.asks.filter((quote) => quote[1] !== "0").sort((a, b) => parseFloat(b[0]) - parseFloat(a[0])),
+        // .slice(0 - DISPLAY_NUMBER),
         get().orderbook?.asks ?? new Map(),
         "sell",
       );
       const bids = get().mergeSortedQuotes(
-        data.bids
-          .filter((quote) => quote[1] !== "0")
-          .sort((a, b) => parseFloat(b[0]) - parseFloat(a[0]))
-          .slice(0, DISPLAY_NUMBER),
+        data.bids.filter((quote) => quote[1] !== "0").sort((a, b) => parseFloat(b[0]) - parseFloat(a[0])),
+        // .slice(0, DISPLAY_NUMBER),
         get().orderbook?.bids ?? new Map(),
         "buy",
       );
@@ -94,27 +92,26 @@ const useOrderbookStore = create<OrderbookState>()((set, get) => ({
       set(() => ({
         orderbook: {
           ...data,
-          asks: get().createOrderbook(data.asks.slice(0 - DISPLAY_NUMBER)),
-          bids: get().createOrderbook(data.bids.slice(0, DISPLAY_NUMBER)),
+          asks: get().createOrderbook(data.asks.slice(0 - DISPLAY_NUMBER), "sell"),
+          bids: get().createOrderbook(data.bids.slice(0, DISPLAY_NUMBER), "buy"),
         },
       }));
     }
   },
-  createOrderbook: (newQuotes) => {
-    // console.log(newQuotes);
-    const newMap = new Map();
-    newQuotes.forEach((quote) => {
-      // create first snapshot
-      // console.log("create first snapshot!");
-      newMap.set(quote[0], {
-        isNewQuote: false,
-        sizeChange: null,
-        price: quote[0],
-        size: quote[1],
-      });
-    });
-    // console.log("snapshot created!", newMap);
-    return newMap;
+  createOrderbook: (newQuotes, side) => {
+    const newArray = newQuotes.map(
+      (quote) =>
+        [
+          quote[0],
+          {
+            isNewQuote: false,
+            sizeChange: null,
+            price: quote[0],
+            size: quote[1],
+          },
+        ] as [string, QuoteState],
+    );
+    return new Map(get().calculateTotalSize(newArray, side));
   },
   mergeSortedQuotes: (delta, prevMap, side) => {
     const prevArray = Array.from(prevMap.entries());
@@ -174,8 +171,18 @@ const useOrderbookStore = create<OrderbookState>()((set, get) => ({
       j++;
     }
     // console.log("merge result: ", result);
-    result.sort((a, b) => parseFloat(b[0]) - parseFloat(a[0]));
-    return new Map(side === "buy" ? result.slice(0, DISPLAY_NUMBER) : result.slice(0 - DISPLAY_NUMBER));
+    // calculate total size
+    const newArray = side === "buy" ? result.slice(0, DISPLAY_NUMBER) : result.slice(0 - DISPLAY_NUMBER);
+    return new Map(get().calculateTotalSize(newArray, side));
+  },
+  calculateTotalSize: (quoteArr, side) => {
+    let total = 0;
+    const indices = side === "sell" ? [...quoteArr.keys()].reverse() : [...quoteArr.keys()];
+    for (const i of indices) {
+      total += parseFloat(quoteArr[i][1].size);
+      quoteArr[i][1] = { ...quoteArr[i][1], total };
+    }
+    return quoteArr;
   },
 }));
 export default useOrderbookStore;
