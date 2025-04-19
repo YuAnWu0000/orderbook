@@ -20,6 +20,10 @@
 
 ## Commands
 
+### `npm i`
+
+載入相依套件。
+
 ### `npm run start`
 
 開啟開發環境，並帶入 `.env.development`。
