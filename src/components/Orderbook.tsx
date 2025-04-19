@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { twMerge } from "tailwind-merge";
 import useOrderbookStore from "@/store/orderbook";
+import { formatNumberWithCommas } from "@/utils/formatter";
 
 const Orderbook: React.FC = () => {
   const [symbol, setSymbol] = useState("BTCPFC");
@@ -41,7 +42,7 @@ const Orderbook: React.FC = () => {
               item.isNewQuote && "bg-[rgba(255, 91, 90, 0.5)",
             )}
           >
-            <p className="basis-1/3 text-sell text-left">{item.price}</p>
+            <p className="basis-1/3 text-sell text-left">{formatNumberWithCommas(item.price)}</p>
             <p
               className={twMerge(
                 "basis-1/3 text-primary",
@@ -49,9 +50,9 @@ const Orderbook: React.FC = () => {
                 item.sizeChange === "decrease" && "bg-[rgba(255,91,90,0.5)]",
               )}
             >
-              {item.size}
+              {formatNumberWithCommas(item.size)}
             </p>
-            <p className="basis-1/3 text-primary">{1000}</p>
+            <p className="basis-1/3 text-primary">{formatNumberWithCommas(1000)}</p>
           </div>
         ))}
       </div>
@@ -65,7 +66,7 @@ const Orderbook: React.FC = () => {
               item.isNewQuote && "bg-[rgba(0,177,93,0.5)]",
             )}
           >
-            <p className="basis-1/3 text-buy text-left">{item.price}</p>
+            <p className="basis-1/3 text-buy text-left">{formatNumberWithCommas(item.price)}</p>
             <p
               className={twMerge(
                 "basis-1/3 text-primary",
@@ -73,9 +74,9 @@ const Orderbook: React.FC = () => {
                 item.sizeChange === "decrease" && "bg-[rgba(255,91,90,0.5)]",
               )}
             >
-              {item.size}
+              {formatNumberWithCommas(item.size)}
             </p>
-            <p className="basis-1/3 text-primary">{1000}</p>
+            <p className="basis-1/3 text-primary">{formatNumberWithCommas(1000)}</p>
           </div>
         ))}
       </div>

@@ -8,7 +8,7 @@ const App: React.FC = () => {
   useEffect(() => {
     initWebSocket({
       op: "subscribe",
-      args: ["update:BTCPFC_0", "tradeHistoryApi:BTCPFC"],
+      args: ["update:BTCPFC_0"],
     });
   }, []);
   return (
