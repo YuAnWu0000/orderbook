@@ -96,8 +96,13 @@ const useWebSocketStore = create<WebSocketState>()((set, get) => ({
   },
   sendSocketMessage(connectionId, msg) {
     // console.log('msg: ', msg)
-    if (get().wsInstance[connectionId]?.readyState === SOCKET_READY_STATE_ENUM.OPEN) {
-      get().wsInstance[connectionId]?.send(JSON.stringify(msg));
+    const ws = get().wsInstance[connectionId];
+    if (!ws) {
+      console.log("No such websocket instance");
+      return;
+    }
+    if (ws.readyState === SOCKET_READY_STATE_ENUM.OPEN) {
+      ws.send(JSON.stringify(msg));
       // console.log("message sent: ", JSON.stringify(msg));
     }
   },
