@@ -8,18 +8,18 @@ export interface WebSocketRequest {
 }
 
 interface WebSocketState {
-  wsInstance: null | WebSocket;
-  initWebSocket: (firstMsg?: WebSocketRequest) => void;
-  sendSocketMessage: (msg: WebSocketRequest) => void;
+  wsInstance: WebSocket[];
+  initWebSocket: (connectionId: number, endpoint: string | URL, firstMsg?: WebSocketRequest) => void;
+  sendSocketMessage: (connectionId: number, msg: WebSocketRequest) => void;
 }
-const wsUri = process.env.REACT_APP_WS_API_URL as string | URL;
+// const wsUri = process.env.REACT_APP_WS_API_URL as string | URL;
 const useWebSocketStore = create<WebSocketState>()((set, get) => ({
-  wsInstance: null,
-  initWebSocket(firstMsg) {
-    const socket: WebSocket = new WebSocket(wsUri);
+  wsInstance: [],
+  initWebSocket(connectionId, endpoint, firstMsg) {
+    const socket: WebSocket = new WebSocket(endpoint);
     socket.onopen = () => {
       console.log("websocket connected!");
-      if (firstMsg) get().sendSocketMessage(firstMsg);
+      if (firstMsg) get().sendSocketMessage(connectionId, firstMsg);
     };
     socket.onmessage = (msg) => {
       const res = JSON.parse(msg.data);
@@ -51,6 +51,8 @@ const useWebSocketStore = create<WebSocketState>()((set, get) => ({
       // data handling
       if (res.topic === "update:BTCPFC_0") {
         useOrderbookStore.getState().handleOrderbook(res.data);
+      } else if (res.topic === "tradeHistoryApi") {
+        useOrderbookStore.getState().handleCurrentPrice(res.data);
       } else console.log("--------------topic not found!!--------------");
     };
     socket.onerror = (err) => {
@@ -85,17 +87,17 @@ const useWebSocketStore = create<WebSocketState>()((set, get) => ({
       // see: https://github.com/websockets/ws/issues/964
       setTimeout(() => {
         console.log("Reconnecting...");
-        get().initWebSocket(firstMsg);
+        get().initWebSocket(connectionId, endpoint, firstMsg);
       }, 5000);
     };
     return set(() => ({
-      wsInstance: socket,
+      wsInstance: get().wsInstance.concat([socket]),
     }));
   },
-  sendSocketMessage(msg) {
+  sendSocketMessage(connectionId, msg) {
     // console.log('msg: ', msg)
-    if (get().wsInstance?.readyState === SOCKET_READY_STATE_ENUM.OPEN) {
-      get().wsInstance?.send(JSON.stringify(msg));
+    if (get().wsInstance[connectionId]?.readyState === SOCKET_READY_STATE_ENUM.OPEN) {
+      get().wsInstance[connectionId]?.send(JSON.stringify(msg));
       // console.log("message sent: ", JSON.stringify(msg));
     }
   },

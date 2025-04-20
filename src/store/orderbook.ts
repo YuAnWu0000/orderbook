@@ -1,5 +1,19 @@
 import { create } from "zustand";
 import useWebSocketStore from "@/store/ws";
+import { DISPLAY_NUMBER, ORDERBOOK_CONNECTION_ID, LASTPRICE_CONNECTION_ID } from "@/components/Orderbook";
+
+type CurrentPrice = {
+  price: number;
+  priceChange: null | "increase" | "decrease";
+};
+interface TradeHistoryResponse {
+  price: number;
+  side: "SELL" | "BUY";
+  size: number;
+  symbol: string;
+  timestamp: number;
+  tradeId: number;
+}
 
 type QuoteRawData = [string, string][];
 type QuoteState = {
@@ -29,10 +43,11 @@ interface Orderbook {
   timestamp: number;
   type: "snapshot" | "delta";
 }
-const DISPLAY_NUMBER = 8;
 
 interface OrderbookState {
   orderbook: null | Orderbook;
+  currentPrice: null | CurrentPrice;
+  handleCurrentPrice: (data: TradeHistoryResponse[]) => void;
   handleOrderbook: (data: OrderbookResponse) => void;
   createOrderbook: (newQuotes: QuoteRawData, side: "buy" | "sell") => Map<string, QuoteState>;
   mergeSortedQuotes: (
@@ -45,38 +60,52 @@ interface OrderbookState {
 
 const useOrderbookStore = create<OrderbookState>()((set, get) => ({
   orderbook: null,
+  currentPrice: null,
+  handleCurrentPrice: (data) => {
+    const prevPrice = get().currentPrice;
+    const nowPrice = data[0].price;
+    set(() => ({
+      currentPrice: {
+        price: nowPrice,
+        priceChange:
+          prevPrice && nowPrice !== prevPrice.price ? (nowPrice > prevPrice.price ? "increase" : "decrease") : null,
+      },
+    }));
+    return;
+  },
   handleOrderbook: (data) => {
     if (data.type === "delta") {
-      if (!get().orderbook) {
+      const prevOrderbook = get().orderbook;
+      if (!prevOrderbook) {
         console.log("Lack of previous orderbook data. Please get snapshot again.");
         return;
       }
       const asks = get().mergeSortedQuotes(
         data.asks.filter((quote) => quote[1] !== "0").sort((a, b) => parseFloat(b[0]) - parseFloat(a[0])),
         // .slice(0 - DISPLAY_NUMBER),
-        get().orderbook?.asks ?? new Map(),
+        prevOrderbook.asks ?? new Map(),
         "sell",
       );
       const bids = get().mergeSortedQuotes(
         data.bids.filter((quote) => quote[1] !== "0").sort((a, b) => parseFloat(b[0]) - parseFloat(a[0])),
         // .slice(0, DISPLAY_NUMBER),
-        get().orderbook?.bids ?? new Map(),
+        prevOrderbook.bids ?? new Map(),
         "buy",
       );
       // console.log(asks, bids);
       // handle order book error
       if (
-        data.prevSeqNum !== get().orderbook?.seqNum ||
+        data.prevSeqNum !== prevOrderbook.seqNum ||
         Array.from(bids.keys())[0] > Array.from(asks.keys())[asks.size - 1]
       ) {
-        useWebSocketStore.getState().sendSocketMessage({
+        useWebSocketStore.getState().sendSocketMessage(ORDERBOOK_CONNECTION_ID, {
           op: "unsubscribe",
           args: ["update:BTCPFC_0"],
         });
         // set(() => ({
         //   orderbook: null,
         // }));
-        useWebSocketStore.getState().sendSocketMessage({
+        useWebSocketStore.getState().sendSocketMessage(ORDERBOOK_CONNECTION_ID, {
           op: "subscribe",
           args: ["update:BTCPFC_0"],
         });
