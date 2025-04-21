@@ -53,7 +53,17 @@ const useWebSocketStore = create<WebSocketState>()((set, get) => ({
         useOrderbookStore.getState().handleOrderbook(res.data);
       } else if (res.topic === "tradeHistoryApi") {
         useOrderbookStore.getState().handleCurrentPrice(res.data);
-      } else console.log("--------------topic not found!!--------------");
+      } else if (res.event === "subscribe") {
+        // res.channel.forEach((item: string) => {
+        //   console.log(`subscribe ${item} successfully`);
+        // });
+      } else if (res.event === "unsubscribe") {
+        // res.channel.forEach((item: string) => {
+        //   console.log(`unsubscribe ${item} successfully`);
+        // });
+      } else {
+        console.log("--------------topic not found!!--------------");
+      }
     };
     socket.onerror = (err) => {
       console.log("ws on error", err);

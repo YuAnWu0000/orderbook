@@ -9,7 +9,7 @@ export const ORDERBOOK_CONNECTION_ID = 0;
 export const LASTPRICE_CONNECTION_ID = 1;
 
 const Orderbook: React.FC = () => {
-  const [symbol, setSymbol] = useState("BTCPFC");
+  const [symbol] = useState("BTCPFC");
   const { orderbook, currentPrice } = useOrderbookStore();
   const { initWebSocket } = useWebSocketStore();
   useEffect(() => {
@@ -40,7 +40,7 @@ const Orderbook: React.FC = () => {
             key={`ask${item.price}`}
             className={twMerge(
               "flex items-center justify-between hover:bg-[#1E3059] cursor-pointer",
-              item.isNewQuote && "bg-[rgba(255,91,90,0.5)",
+              item.isNewQuote && "bg-[rgba(255,91,90,0.5)]",
             )}
           >
             <p className="basis-[35%] text-sell text-left px-4">{formatNumberWithCommas(item.price)}</p>
@@ -54,10 +54,10 @@ const Orderbook: React.FC = () => {
               {formatNumberWithCommas(item.size)}
             </p>
             <p className="basis-[40%] relative text-primary px-4">
-              <div
+              <span
                 className="w-full h-full absolute top-0 right-0 bg-[rgba(255,90,90,0.12)]"
                 style={{ width: `${(item.percentage ?? 0) * 100}%` }}
-              ></div>
+              ></span>
               {formatNumberWithCommas(item.total)}
             </p>
           </div>
@@ -98,10 +98,10 @@ const Orderbook: React.FC = () => {
               {formatNumberWithCommas(item.size)}
             </p>
             <p className="basis-[40%] relative text-primary px-4">
-              <div
+              <span
                 className="w-full h-full absolute top-0 right-0 bg-[rgba(16,186,104,0.12)] max-w-full"
                 style={{ width: `${(item.percentage ?? 0) * 100}%` }}
-              ></div>
+              ></span>
               {formatNumberWithCommas(item.total)}
             </p>
           </div>

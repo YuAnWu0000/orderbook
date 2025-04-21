@@ -1,6 +1,6 @@
 import { create } from "zustand";
 import useWebSocketStore from "@/store/ws";
-import { DISPLAY_NUMBER, ORDERBOOK_CONNECTION_ID, LASTPRICE_CONNECTION_ID } from "@/components/Orderbook";
+import { DISPLAY_NUMBER, ORDERBOOK_CONNECTION_ID } from "@/components/Orderbook";
 
 type CurrentPrice = {
   price: number;
@@ -102,9 +102,6 @@ const useOrderbookStore = create<OrderbookState>()((set, get) => ({
           op: "unsubscribe",
           args: ["update:BTCPFC_0"],
         });
-        // set(() => ({
-        //   orderbook: null,
-        // }));
         useWebSocketStore.getState().sendSocketMessage(ORDERBOOK_CONNECTION_ID, {
           op: "subscribe",
           args: ["update:BTCPFC_0"],
@@ -150,40 +147,19 @@ const useOrderbookStore = create<OrderbookState>()((set, get) => ({
     const result: [string, QuoteState][] = [];
     // console.log(delta, prevMap, side);
     while (i < delta.length && j < prevArray.length) {
-      if (parseFloat(delta[i][0]) > parseFloat(prevArray[j][0])) {
-        result.push([
-          delta[i][0],
-          {
-            isNewQuote: true,
-            sizeChange: null,
-            price: delta[i][0],
-            size: delta[i][1],
-          },
-        ]);
+      const [dPrice, dSize] = delta[i];
+      const [pPrice, pData] = prevArray[j];
+      const d = parseFloat(dPrice),
+        p = parseFloat(pPrice);
+      if (d > p) {
+        result.push([dPrice, { isNewQuote: true, sizeChange: null, price: dPrice, size: dSize }]);
         i++;
-      } else if (parseFloat(delta[i][0]) < parseFloat(prevArray[j][0])) {
-        result.push([
-          prevArray[j][0],
-          {
-            isNewQuote: false,
-            sizeChange: null,
-            price: prevArray[j][0],
-            size: prevArray[j][1].size,
-          },
-        ]);
+      } else if (d < p) {
+        result.push([pPrice, { isNewQuote: false, sizeChange: null, price: pPrice, size: pData.size }]);
         j++;
       } else {
-        // price equal
-        // console.log("delta", parseFloat(delta[i][1]));
-        result.push([
-          delta[i][0],
-          {
-            isNewQuote: false,
-            sizeChange: parseFloat(delta[i][1]) > parseFloat(prevArray[j][1].size) ? "increase" : "decrease",
-            price: delta[i][0],
-            size: delta[i][1],
-          },
-        ]);
+        const sizeChange = parseFloat(dSize) > parseFloat(pData.size) ? "increase" : "decrease";
+        result.push([dPrice, { isNewQuote: false, sizeChange, price: dPrice, size: dSize }]);
         i++;
         j++;
       }

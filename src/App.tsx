@@ -1,4 +1,4 @@
-import React, { useEffect } from "react";
+import React from "react";
 import Dialog from "@/components/Dialog";
 import Dashboard from "./pages/dashboard/Index";
 
